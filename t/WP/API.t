@@ -7,7 +7,7 @@ use Test::XMLRPC::Lite;
 use Test::Fatal;
 use Test::More 0.88;
 
-use SOAP::Lite;
+use XMLRPC::Lite;
 use WP::API;
 
 my $api = WP::API->new(
