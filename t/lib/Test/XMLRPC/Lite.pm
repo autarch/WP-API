@@ -6,13 +6,14 @@ use warnings;
 use parent 'XMLRPC::Lite';
 
 our $CallTest;
-our $Call;
+our $ResponseXML;
 
 sub call {
     shift;
     $CallTest->(@_) if $CallTest;
 
-    return $Call;
+    die 'No response XML defined' unless $ResponseXML;
+    return XMLRPC::Deserializer->deserialize($ResponseXML);
 }
 
 1;

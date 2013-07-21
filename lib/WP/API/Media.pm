@@ -4,61 +4,47 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-use DateTime::Format::ISO8601;
-use Scalar::Util qw( blessed );
-use WP::API::Types qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveInt );
+use WP::API::Types
+    qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveOrZeroInt Uri );
 
 use Moose;
 
-with 'WP::API::Role::WPObject';
-
 my %fields = (
     date_created_gmt => 'DateTime',
-    parent           => Maybe [PositiveInt],
-    link             => NonEmptyStr,
+    parent           => PositiveOrZeroInt,
+    link             => Uri,
     title            => NonEmptyStr,
     caption          => Maybe [NonEmptyStr],
     description      => Maybe [NonEmptyStr],
     metadata         => HashRef,
-    image_meta       => HashRef,
+    thumbnail        => Uri,
 );
 
 with 'WP::API::Role::WPObject' => {
-    id_method            => 'post_id',
+    id_method            => 'attachment_id',
     xmlrpc_get_method    => 'wp.getMediaItem',
     xmlrpc_create_method => 'wp.uploadFile',
     fields               => \%fields,
 };
 
-for my $field ( keys %fields ) {
-    my $spec = $fields{$field};
-
-    if ( blessed($spec) ) {
-        has $field => (
-            is       => 'ro',
-            isa      => $spec,
-            init_arg => undef,
-            lazy     => 1,
-            default  => sub { $_[0]->_attachment_data()->{$field} },
-        );
-    }
-    else {
-        has $field => (
-            is       => 'ro',
-            init_arg => undef,
-            lazy     => 1,
-            %{$spec},
-        );
-    }
-}
-
 sub _munge_create_parameters {
     my $class = shift;
     my $p     = shift;
 
-    $class->_deflate_datetimes( $p, 'attachment_date_gmt' );
+    my %copy = %{$p};
+
+    delete @{$p}{ keys %{$p} };
+
+    $p->{data} = \%copy;
 
     return;
+}
+
+sub _create_result_as_params {
+    my $class = shift;
+    my $p     = shift;
+
+    return ( attachment_id => $p->{id} );
 }
 
 __PACKAGE__->meta()->make_immutable();

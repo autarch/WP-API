@@ -6,6 +6,8 @@ use namespace::autoclean;
 
 use Carp qw( confess );
 use XMLRPC::Lite;
+use WP::API::Media;
+use WP::API::Post;
 use WP::API::Types qw( ClassName NonEmptyStr PositiveInt Uri );
 use WP::API::WrappedClass;
 
@@ -70,7 +72,7 @@ for my $type (qw( media page post user )) {
 sub _wrapped_class {
     my $self = shift;
 
-    return WP::API::WrappedClass->new(
+    return WP::API::WrappedClass->wrap(
         class => shift,
         api   => $self,
     );

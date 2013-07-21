@@ -33,8 +33,7 @@ my $api = WP::API->new(
         );
     };
 
-    local $Test::XMLRPC::Lite::Call
-        = XMLRPC::Deserializer->deserialize(<<'EOF');
+    local $Test::XMLRPC::Lite::ResponseXML = <<'EOF';
 <?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
   <params>
@@ -63,8 +62,7 @@ EOF
 }
 
 {
-    local $Test::XMLRPC::Lite::Call
-        = XMLRPC::Deserializer->deserialize(<<'EOF');
+    local $Test::XMLRPC::Lite::ResponseXML = <<'EOF';
 <?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
   <fault>

@@ -25,11 +25,27 @@ our $AUTOLOAD;
 sub AUTOLOAD {
     my $self = shift;
 
-    my $method = $AUTOLOAD =~ /::(\w+)$/;
+    my ($method) = $AUTOLOAD =~ /::(\w+)$/;
 
     return $self->class()->$method( api => $self->api(), @_ );
 }
 
 __PACKAGE__->meta()->make_immutable();
+
+# This is hack so we can make an immutablized constructor - Moose will not
+# rename the constructor as part of inlining.
+*wrap = \&new;
+
+Package::Stash->new(__PACKAGE__)->remove_symbol('&new');
+
+# Now we want ->new to call the method on the wrapped class, not on
+# WrappedClass itself.
+Package::Stash->new(__PACKAGE__)->add_symbol(
+    '&new' => sub {
+        my $self = shift;
+
+        $self->class()->new( api => $self->api(), @_ );
+    }
+);
 
 1;

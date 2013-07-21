@@ -4,33 +4,41 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-use DateTime::Format::ISO8601;
-use Scalar::Util qw( blessed );
-use WP::API::Types qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveInt );
+use WP::API::Types
+    qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveInt PositiveOrZeroInt Uri );
 
 use Moose;
 use MooseX::Params::Validate qw( validated_hash );
 
 my %fields = (
-    post_type      => NonEmptyStr,
-    post_status    => NonEmptyStr,
-    post_title     => NonEmptyStr,
-    post_author    => PositiveInt,
-    post_excerpt   => Maybe [NonEmptyStr],
-    post_content   => NonEmptyStr,
-    post_date_gmt  => 'DateTime',
-    post_date      => 'DateTime',
-    post_format    => NonEmptyStr,
-    post_name      => Maybe [NonEmptyStr],
-    post_password  => Maybe [NonEmptyStr],
-    comment_status => Maybe [NonEmptyStr],
-    ping_status    => Maybe [NonEmptyStr],
-    sticky         => Bool,
-    post_thumbnail => HashRef,
-    post_parent    => Maybe [PositiveInt],
-    custom_fields  => ArrayRef [HashRef],
-    terms          => ArrayRef [HashRef],
-    enclosure      => HashRef,
+    post_type         => NonEmptyStr,
+    post_status       => NonEmptyStr,
+    post_title        => NonEmptyStr,
+    post_author       => PositiveInt,
+    post_excerpt      => Maybe [NonEmptyStr],
+    post_content      => NonEmptyStr,
+    post_date_gmt     => 'DateTime',
+    post_date         => 'DateTime',
+    post_modified_gmt => 'DateTime',
+    post_modified     => 'DateTime',
+    post_format       => NonEmptyStr,
+    post_name         => NonEmptyStr,
+    post_password     => Maybe [NonEmptyStr],
+    comment_status    => Maybe [NonEmptyStr],
+    ping_status       => Maybe [NonEmptyStr],
+    sticky            => Bool,
+    post_thumbnail    => HashRef,
+    post_parent       => PositiveOrZeroInt,
+    post_mime_type    => Maybe [NonEmptyStr],
+    link              => Uri,
+    guid              => Uri,
+    menu_order        => PositiveOrZeroInt,
+    comment_status    => NonEmptyStr,
+    ping_status       => NonEmptyStr,
+    sticky            => Bool,
+    custom_fields     => ArrayRef [HashRef],
+    terms             => ArrayRef [HashRef],
+    enclosure         => HashRef,
 );
 
 with 'WP::API::Role::WPObject' => {
@@ -46,7 +54,34 @@ sub _munge_create_parameters {
 
     $p->{post_status} //= 'publish';
 
-    $class->_deflate_datetimes( $p, 'post_date_gmt', 'post_date' );
+    $class->_deflate_datetimes(
+        $p,
+        'post_date_gmt',     'post_date',
+        'post_modified_gmt', 'post_modified',
+    );
+
+    return;
+}
+
+sub _create_result_as_params {
+    my $class = shift;
+    my $p     = shift;
+
+    return ( post_id => $p );
+}
+
+sub _munge_raw_data {
+    my $self = shift;
+    my $p    = shift;
+
+    # WordPress 3.5 seems to return an array instead of a struct when the post
+    # has no thumbnail.
+    {
+        local $@;
+        if ( eval { my $foo = @{ $p->{post_thumbnail} }; 1 } ) {
+            $p->{post_thumbnail} = {};
+        }
+    }
 
     return;
 }

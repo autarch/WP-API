@@ -4,11 +4,14 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use DateTime;
 use MooseX::Params::Validate qw( validated_hash );
 use Scalar::Util qw( blessed );
-use WP::API::Types qw( HashRef NonEmptyStr PositiveInt );
+use WP::API::Types qw( HashRef Maybe NonEmptyStr PositiveInt );
 
 use MooseX::Role::Parameterized;
+
+requires '_create_result_as_params';
 
 parameter id_method => (
     isa      => NonEmptyStr,
@@ -47,6 +50,7 @@ has _raw_data => (
 my $_make_field_attrs = sub {
     my $fields = shift;
 
+    my @optional;
     for my $field ( keys %{$fields} ) {
         my $spec = $fields->{$field};
 
@@ -57,42 +61,56 @@ my $_make_field_attrs = sub {
             lazy     => 1,
         );
 
-        my $default;
         if ( $spec eq 'DateTime' ) {
             my $datetime_method
                 = $field =~ /_gmt$/ ? '_gmt_datetime' : '_floating_datetime';
-            $default = sub {
+            $attr_p{default} = sub {
                 $_[0]->$datetime_method( $_[0]->_raw_data()->{$field} );
             };
         }
         else {
-            my $default = sub { $_[0]->_raw_data()->{$field} },;
+            $attr_p{default} = sub { $_[0]->_raw_data()->{$field} },;
+
+            if ( $spec->is_a_type_of(Maybe) ) {
+                $attr_p{predicate} = 'has_' . $field;
+                push @optional, $field;
+            }
+
+            if ( $spec->has_coercion() ) {
+                $attr_p{coerce} = 1;
+            }
         }
 
-        has $field => (
-            is       => 'ro',
-            isa      => $spec,
-            init_arg => undef,
-            lazy     => 1,
-            default  => $default,
-        );
+        has $field => %attr_p;
     }
+
+    method _optional_fields => sub { @optional };
 };
 
 sub _gmt_datetime {
-    shift;
+    my $self  = shift;
     my $value = shift;
 
-    return DateTime::Format::ISO8601->parse_datetime($value)
-        ->set_time_zone('UTC') );
+    return $self->_parse_datetime($value)->set_time_zone('UTC');
 }
 
 sub _floating_datetime {
-    shift;
+    my $self  = shift;
     my $value = shift;
 
-    return DateTime::Format::ISO8601->parse_datetime($value)
-        ->set_time_zone( $self->api()->server_timezone() ) );
+    return $self->_parse_datetime($value)
+        ->set_time_zone( $self->api()->server_timezone() );
+}
+
+sub _parse_datetime {
+    my $self  = shift;
+    my $value = shift;
+
+    my %parsed;
+    @parsed{qw(year month day hour minute second)}
+        = $value =~ /^(\d{4})(\d\d)(\d\d)T(\d\d):(\d\d):(\d\d)Z?/;
+
+    return DateTime->new( %parsed, time_zone => 'floating' );
 }
 
 role {
@@ -102,18 +120,23 @@ role {
 
     my $id_method = $p->id_method();
 
-    has $id_method => (
-        is       => 'ro',
-        isa      => PositiveInt,
-        required => 1,
-    );
+    has $id_method => ( is => 'ro', isa => PositiveInt, required => 1, );
 
     my $xmlrpc_get_method = $p->xmlrpc_get_method();
 
     method _build_raw_data => sub {
         my $self = shift;
 
-        return $api->call( $xmlrpc_get_method, $self->$id_method() );
+        my $raw
+            = $self->api()->call( $xmlrpc_get_method, $self->$id_method() );
+        for my $field ( $self->_optional_fields() ) {
+            delete $raw->{$field}
+                unless defined $raw->{$field} && length $raw->{$field};
+        }
+
+        $self->_munge_raw_data($raw);
+
+        return $raw;
     };
 
     my $xmlrpc_create_method = $p->xmlrpc_create_method();
@@ -130,12 +153,15 @@ role {
 
         $class->_munge_create_parameters( \%p );
 
-        my $id = $api->call(
-            $create_method,
+        my $result = $api->call(
+            $xmlrpc_create_method,
             \%p,
         );
 
-        return $class->new( $id_method => $id, api => $api );
+        return $class->new(
+            $class->_create_result_as_params($result),
+            api => $api
+        );
     };
 };
 
@@ -143,29 +169,36 @@ sub _munge_create_parameters {
     return;
 }
 
-sub _deflate_datetimes {
-    my $class  = shift;
-    my $p      = shift;
-    my @fields = @_;
-
-    for my $field (@fields) {
-        next unless $p->{$field} && blessed $p->{field};
-
-        if ( $field =~ /_gmt$/ ) {
-            $p->{$field}
-                = $p->{$field}->clone()->set_time_zone('UTC')->datetime()
-                . 'Z';
-        }
-        else {
-
-            $p->{$field}
-                = $p->{$field}->clone()
-                ->set_time_zone( $self->api()->server_time_zone() )
-                ->datetime();
-        }
-    }
-
+sub _munge_raw_data {
     return;
+}
+
+{
+    my $format = q{YYYMMdd'T'HH:mm:ss};
+
+    sub _deflate_datetimes {
+        my $class  = shift;
+        my $p      = shift;
+        my @fields = @_;
+
+        for my $field (@fields) {
+            next unless $p->{$field} && blessed $p->{$field};
+
+            if ( $field =~ /_gmt$/ ) {
+                $p->{$field}
+                    = $p->{$field}->clone()->set_time_zone('UTC')
+                    ->format_cldr( $format . q{'Z'} );
+            }
+            else {
+                $p->{$field}
+                    = $p->{$field}->clone()
+                    ->set_time_zone( $p->{api}->server_time_zone() )
+                    ->format_cldr($format);
+            }
+        }
+
+        return;
+    }
 }
 
 1;
