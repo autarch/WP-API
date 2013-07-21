@@ -10,16 +10,16 @@ use Test::More 0.88;
 use SOAP::Lite;
 use WP::API;
 
-{
-    my $api = WP::API->new(
-        blog_id         => 42,
-        username        => 'testuser',
-        password        => 'testpass',
-        proxy           => 'http://example.com/xmlrpc.php',
-        server_timezone => 'UTC',
-        _xmlrpc_class   => 'Test::XMLRPC::Lite'
-    );
+my $api = WP::API->new(
+    blog_id         => 42,
+    username        => 'testuser',
+    password        => 'testpass',
+    proxy           => 'http://example.com/xmlrpc.php',
+    server_timezone => 'UTC',
+    _xmlrpc_class   => 'Test::XMLRPC::Lite'
+);
 
+{
     my @params = ( 'foo', 99, { x => 'y' } );
 
     local $Test::XMLRPC::Lite::CallTest = sub {
@@ -58,7 +58,36 @@ EOF
             post_id    => 1252,
             post_title => 'Test',
         },
-        'result  from XMLRPC::Lite->call'
+        'result from XMLRPC::Lite->call'
+    );
+}
+
+{
+    local $Test::XMLRPC::Lite::Call
+        = XMLRPC::Deserializer->deserialize(<<'EOF');
+<?xml version="1.0" encoding="UTF-8"?>
+<methodResponse>
+  <fault>
+    <value>
+      <struct>
+        <member>
+          <name>faultCode</name>
+          <value><int>400</int></value>
+        </member>
+        <member>
+          <name>faultString</name>
+          <value><string>Insufficient arguments passed to this XML-RPC method.</string></value>
+        </member>
+      </struct>
+    </value>
+  </fault>
+</methodResponse>
+EOF
+
+    like(
+        exception { $api->call('test.Method') },
+        qr/\QError calling test.Method XML-RPC method: Code = 400 - String = Insufficient arguments passed to this XML-RPC method./,
+        'fault result from XMLRPC::Lite->call'
     );
 }
 

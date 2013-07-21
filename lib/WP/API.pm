@@ -104,13 +104,12 @@ sub _check_for_error {
         or return;
 
     my @pieces;
-    for my $info (qw( code string detail )) {
-        my $meth  = 'fault' . $info;
-        my $value = $fault->$meth();
+    for my $key (qw( Code String Detail )) {
+        my $value = $fault->{'fault'.$key};
 
         next unless defined $value && length $value;
 
-        push @pieces, ( ucfirst $meth ) . ": $value";
+        push @pieces, "$key = $value";
     }
 
     my $error = "Error calling $method XML-RPC method: ";
