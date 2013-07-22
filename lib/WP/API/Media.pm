@@ -107,7 +107,7 @@ same name.
 
 =back
 
-Note that if future versions of WordPress accept more parameter, this API
+Note that if future versions of WordPress accept more parameters, this API
 allows you to pass them. Any key/value pairs you pass will be sent to
 WordPress as-is.
 
