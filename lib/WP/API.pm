@@ -140,3 +140,105 @@ sub _check_for_error {
 __PACKAGE__->meta()->make_immutable();
 
 1;
+
+# ABSTRACT: An interface to the WordPress XML-RPC API
+
+__END__
+
+=pod
+
+=head1 SYNOPSIS
+
+  my $api = WP::API->new(
+      username         => 'testuser',
+      password         => 'testpass',
+      proxy            => 'http://example.com/xmlrpc.php',
+      server_time_zone => 'UTC',
+  );
+
+  my $post = $api->post()->create(
+      post_title    => 'Foo',
+      post_date_gmt => $dt,
+      post_content  => 'This is the body',
+      post_author   => 42,
+  );
+
+  print $post->post_modified_gmt()->date();
+
+  my $other_post = $api->post()->new( post_id => 99 );
+  print $other_post->post_title();
+
+=head1 DESCRIPTION
+
+B<This module is very new and only covers a small portion of the WordPress
+API. Patches to increase coverage are welcome.>
+
+This module provides a Perl interface to the WordPress XML-RPC API. See
+http://codex.wordpress.org/XML-RPC_WordPress_API for API details.
+
+Generally speaking, classes in this module follow the same naming convention
+as WordPress itself when it comes to object attributes. However, the actual
+API methods have been made more Perlish, so we have C<< $api->post()->create()
+>> instead of C<< $api->newPost() >>.
+
+=head1 METHODS
+
+This module is the main entry point for creating objects from WordPress
+data. You should not instantiate any other class directly.
+
+=head2 WP::API->new(...)
+
+This creates a new API object. It accepts the following parameters:
+
+=over 4
+
+=item * username
+
+The username you want the API calls to use. Required.
+
+=item * password
+
+The password for that user. Required.
+
+=item * proxy
+
+The XML-RPC URI. This will be something like
+C<http://example.com/xmlrpc.php>. Required.
+
+=item * server_time_zone
+
+This is used to transform server-provided local datetimes into a known time
+zone. Required.
+
+=item * blog_id
+
+This is only required if the username you provide is a member of more than one
+blog. If so, you must provide the id for the blog you want to access. If the
+user only belongs to one blog then this module figures out the blog_id on its
+own.
+
+=back
+
+=head2 $api->post()
+
+This returns a shim for the L<WP::API::Post> class. You can call any B<class>
+method that class provides, such as C<new()> or C<create>, on this shim.
+
+=head2 $api->media()
+
+This returns a shim for the L<WP::API::Media> class. You can call any B<class>
+method that class provides, such as C<new()> or C<create>, on this shim.
+
+=head2 $api->call(...)
+
+Calls an XML-RPC method on the server. The first argument should be an XML-RPC
+method name like 'wp.editPost' and the remaining parameters should be the
+parameters for the method.
+
+This method automatically prepends the blog_id, username, and password to
+calls as needed.
+
+If the call fails for some reason, this method throws an error. Otherwise it
+returns the raw data structure returned by WordPress.
+
+=cut

@@ -22,3 +22,13 @@ __PACKAGE__->provide_types_from(
 );
 
 1;
+
+# ABSTRACT: Type library for the WP-API distro
+
+__END__
+
+=head1 DESCRIPTION
+
+There are no user serviceable parts in here.
+
+=cut

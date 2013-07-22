@@ -210,3 +210,13 @@ sub _munge_raw_data {
 }
 
 1;
+
+# ABSTRACT: A shared role for all WP::API::* objects
+
+__END__
+
+=head1 DESCRIPTION
+
+There are no user serviceable parts in here.
+
+=cut

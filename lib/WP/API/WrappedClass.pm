@@ -50,3 +50,17 @@ Package::Stash->new(__PACKAGE__)->add_symbol(
 );
 
 1;
+
+# ABSTRACT: A shim to pass the WP::API object to Post/Media/etc objects
+
+__END__
+
+=pod
+
+=for Pod::Coverage wrap
+
+=head1 DESCRIPTION
+
+There are no user serviceable parts in here.
+
+=cut
