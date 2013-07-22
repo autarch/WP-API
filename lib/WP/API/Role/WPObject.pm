@@ -187,7 +187,7 @@ sub _munge_raw_data {
             if ( $field =~ /_gmt$/ ) {
                 $p->{$field}
                     = $p->{$field}->clone()->set_time_zone('UTC')
-                    ->format_cldr( $format . q{'Z'} );
+                    ->format_cldr( $format );
             }
             else {
                 $p->{$field}
