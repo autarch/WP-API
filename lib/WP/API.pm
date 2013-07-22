@@ -13,16 +13,17 @@ use WP::API::WrappedClass;
 
 use Moose;
 
-has blog_id => (
-    is       => 'ro',
-    isa      => PositiveInt,
-    required => 1,
-);
-
 has [qw( username password )] => (
     is       => 'ro',
     isa      => NonEmptyStr,
     required => 1,
+);
+
+has blog_id => (
+    is      => 'ro',
+    isa     => PositiveInt,
+    lazy    => 1,
+    builder => '_build_blog_id',
 );
 
 has proxy => (
@@ -60,6 +61,19 @@ sub _build_xmlrpc {
     return $self->_xmlrpc_class()->proxy( $self->proxy() );
 }
 
+sub _build_blog_id {
+    my $self = shift;
+
+    my $blogs = $self->call('wp.getUsersBlogs');
+
+    if ( @{$blogs} > 1 ) {
+        confess
+            'This user belongs to more than one blog. Please supply a blog_id to the WP::API constructor';
+    }
+
+    return $blogs->[0]{blogid};
+}
+
 for my $type (qw( media page post user )) {
     my $sub = sub {
         my $self = shift;
@@ -84,7 +98,7 @@ sub call {
 
     my $call = $self->_xmlrpc()->call(
         $method,
-        $self->blog_id(),
+        ( $method eq 'wp.getUsersBlogs' ? () : $self->blog_id() ),
         $self->username(),
         $self->password(),
         @_,
