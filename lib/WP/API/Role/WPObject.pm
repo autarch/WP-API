@@ -99,7 +99,7 @@ sub _floating_datetime {
     my $value = shift;
 
     return $self->_parse_datetime($value)
-        ->set_time_zone( $self->api()->server_timezone() );
+        ->set_time_zone( $self->api()->server_time_zone() );
 }
 
 sub _parse_datetime {

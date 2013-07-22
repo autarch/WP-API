@@ -15,12 +15,12 @@ use XMLRPC::Lite;
 use WP::API;
 
 my $api = WP::API->new(
-    blog_id         => 42,
-    username        => 'testuser',
-    password        => 'testpass',
-    proxy           => 'http://example.com/xmlrpc.php',
-    server_timezone => 'America/Chicago',
-    _xmlrpc_class   => 'Test::XMLRPC::Lite'
+    blog_id          => 42,
+    username         => 'testuser',
+    password         => 'testpass',
+    proxy            => 'http://example.com/xmlrpc.php',
+    server_time_zone => 'America/Chicago',
+    _xmlrpc_class    => 'Test::XMLRPC::Lite'
 );
 
 {

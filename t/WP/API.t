@@ -11,12 +11,12 @@ use XMLRPC::Lite;
 use WP::API;
 
 my $api = WP::API->new(
-    blog_id         => 42,
-    username        => 'testuser',
-    password        => 'testpass',
-    proxy           => 'http://example.com/xmlrpc.php',
-    server_timezone => 'UTC',
-    _xmlrpc_class   => 'Test::XMLRPC::Lite'
+    blog_id          => 42,
+    username         => 'testuser',
+    password         => 'testpass',
+    proxy            => 'http://example.com/xmlrpc.php',
+    server_time_zone => 'UTC',
+    _xmlrpc_class    => 'Test::XMLRPC::Lite'
 );
 
 {
@@ -112,11 +112,11 @@ EOF
 EOF
 
     my $api = WP::API->new(
-        username        => 'testuser',
-        password        => 'testpass',
-        proxy           => 'http://example.com/xmlrpc.php',
-        server_timezone => 'UTC',
-        _xmlrpc_class   => 'Test::XMLRPC::Lite'
+        username         => 'testuser',
+        password         => 'testpass',
+        proxy            => 'http://example.com/xmlrpc.php',
+        server_time_zone => 'UTC',
+        _xmlrpc_class    => 'Test::XMLRPC::Lite'
     );
 
     is( $api->blog_id(), 5, 'got blog_id from server' );
@@ -152,11 +152,11 @@ EOF
 EOF
 
     my $api = WP::API->new(
-        username        => 'testuser',
-        password        => 'testpass',
-        proxy           => 'http://example.com/xmlrpc.php',
-        server_timezone => 'UTC',
-        _xmlrpc_class   => 'Test::XMLRPC::Lite'
+        username         => 'testuser',
+        password         => 'testpass',
+        proxy            => 'http://example.com/xmlrpc.php',
+        server_time_zone => 'UTC',
+        _xmlrpc_class    => 'Test::XMLRPC::Lite'
     );
 
     like(

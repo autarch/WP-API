@@ -33,7 +33,7 @@ has proxy => (
     required => 1,
 );
 
-has server_timezone => (
+has server_time_zone => (
     is       => 'ro',
     isa      => NonEmptyStr,
     required => 1,
