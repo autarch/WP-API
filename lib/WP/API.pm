@@ -222,12 +222,12 @@ own.
 =head2 $api->post()
 
 This returns a shim for the L<WP::API::Post> class. You can call any B<class>
-method that class provides, such as C<new()> or C<create>, on this shim.
+method that class provides, such as C<new()> or C<create()>, on this shim.
 
 =head2 $api->media()
 
 This returns a shim for the L<WP::API::Media> class. You can call any B<class>
-method that class provides, such as C<new()> or C<create>, on this shim.
+method that class provides, such as C<new()> or C<create()>, on this shim.
 
 =head2 $api->call(...)
 
