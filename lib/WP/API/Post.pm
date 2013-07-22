@@ -8,7 +8,7 @@ use WP::API::Types
     qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveInt PositiveOrZeroInt Uri );
 
 use Moose;
-use MooseX::Params::Validate qw( validated_hash );
+use MooseX::StrictConstructor;
 
 my %fields = (
     post_type         => NonEmptyStr,

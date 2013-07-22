@@ -8,6 +8,7 @@ use WP::API::Types
     qw( ArrayRef Bool HashRef Maybe NonEmptyStr PositiveOrZeroInt Uri );
 
 use Moose;
+use MooseX::StrictConstructor;
 
 my %fields = (
     date_created_gmt => 'DateTime',

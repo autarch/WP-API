@@ -12,6 +12,7 @@ use WP::API::Types qw( ClassName NonEmptyStr PositiveInt Uri );
 use WP::API::WrappedClass;
 
 use Moose;
+use MooseX::StrictConstructor;
 
 has [qw( username password )] => (
     is       => 'ro',

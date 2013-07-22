@@ -7,6 +7,7 @@ use namespace::autoclean;
 use WP::API::Types qw( ClassName );
 
 use Moose;
+use MooseX::StrictConstructor;
 
 has api => (
     is       => 'ro',
