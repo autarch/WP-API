@@ -128,6 +128,7 @@ EOF
                 value => q{},
             },
         ],
+        enclosure => {},
     );
 
     for my $meth ( sort keys %expect ) {

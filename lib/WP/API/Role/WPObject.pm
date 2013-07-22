@@ -7,7 +7,7 @@ use namespace::autoclean;
 use DateTime;
 use MooseX::Params::Validate qw( validated_hash );
 use Scalar::Util qw( blessed );
-use WP::API::Types qw( HashRef Maybe NonEmptyStr PositiveInt );
+use WP::API::Types qw( ArrayRef HashRef Maybe NonEmptyStr PositiveInt );
 
 use MooseX::Role::Parameterized;
 
@@ -69,7 +69,15 @@ my $_make_field_attrs = sub {
             };
         }
         else {
-            $attr_p{default} = sub { $_[0]->_raw_data()->{$field} },;
+            my $default_if_missing
+                = $spec->is_a_type_of(ArrayRef) ? []
+                : $spec->is_a_type_of(HashRef)  ? {}
+                :                                 undef;
+
+            $attr_p{default} = sub {
+                my $raw = $_[0]->_raw_data();
+                defined $raw->{$field} ? $raw->{$field} : $default_if_missing;
+            };
 
             if ( $spec->is_a_type_of(Maybe) ) {
                 $attr_p{predicate} = 'has_' . $field;
