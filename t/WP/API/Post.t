@@ -182,7 +182,7 @@ EOF
     );
 
     my %expect = %p;
-    $expect{post_date_gmt} = $dt->format_cldr(q{YYYMMdd'T'HH:mm:ss'Z'});
+    $expect{post_date_gmt} = $dt->format_cldr(q{YYYMMdd'T'HH:mm:ss});
     $expect{post_status}   = 'publish';
 
     local $Test::XMLRPC::Lite::CallTest = sub {
