@@ -27,19 +27,6 @@ with 'WP::API::Role::WPObject' => {
     fields               => \%fields,
 };
 
-sub _munge_create_parameters {
-    my $class = shift;
-    my $p     = shift;
-
-    my %copy = %{$p};
-
-    delete @{$p}{ keys %{$p} };
-
-    $p->{data} = \%copy;
-
-    return;
-}
-
 sub _create_result_as_params {
     my $class = shift;
     my $p     = shift;
