@@ -180,7 +180,7 @@ EOF
         is( shift, 'testpass',      'fourth argument to XMLRPC::Lite->call' );
         is_deeply(
             @_,
-            { data => \%p },
+            \%p,
             'got expected media creation parameters'
         );
     };
