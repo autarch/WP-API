@@ -240,7 +240,7 @@ parameters for the method.
 This method automatically prepends the blog_id, username, and password to
 calls as needed.
 
-If the call fails for some reason, this method throws an error. Otherwise it
-returns the raw data structure returned by WordPress.
+If the call fails for some reason then this method throws an error. Otherwise
+it returns the raw data structure returned by WordPress.
 
 =cut
