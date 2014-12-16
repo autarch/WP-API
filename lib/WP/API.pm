@@ -117,8 +117,8 @@ sub _check_for_error {
     my $call   = shift;
     my $method = shift;
 
-    my $fault = $call->fault()
-        or return;
+    my $fault = $call->fault();
+    return unless $fault;
 
     my @pieces;
     for my $key (qw( Code String Detail )) {
